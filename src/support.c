@@ -17,36 +17,33 @@
 /* Write data to the FTDI chip */
 int raw_write(struct mpsse_context *mpsse, unsigned char *buf, int size)
 {
-        int retval = MPSSE_FAIL;
+	int retval = MPSSE_FAIL;
 
-        if(mpsse->mode)
-	{
-		if(ftdi_write_data(&mpsse->ftdi, buf, size) == size)
-        	{
-                	retval = MPSSE_OK;
+	if (mpsse->mode) {
+		if (ftdi_write_data(&mpsse->ftdi, buf, size) == size) {
+			retval = MPSSE_OK;
 		}
-        }
+	}
 
 	return retval;
 }
 
 /* Read data from the FTDI chip */
+<<<<<<< HEAD
 int raw_read(struct mpsse_context *mpsse, unsigned char *buf, int size)
 {
 	int n = 0, r = 0;
 	int retry = RAW_READ_RETRY;
 
-	if(mpsse->mode)
-	{
-		while((n < size) && (retry -- > 0))
-		{
+	if (mpsse->mode) {
+		while ((n < size) && (retry-- > 0)) {
 			r = ftdi_read_data(&mpsse->ftdi, buf, size);
-			if(r < 0) break;
+			if (r < 0)
+				break;
 			n += r;
 		}
 
-		if(mpsse->flush_after_read)
-		{
+		if (mpsse->flush_after_read) {
 			/*
 			 * Make sure the buffers are cleared after a read or subsequent reads may fail.
 			 *
@@ -57,16 +54,42 @@ int raw_read(struct mpsse_context *mpsse, unsigned char *buf, int size)
 	}
 
 	return n;
+=======
+int raw_read(struct mpsse_context *mpsse, unsigned char *buf, int size)
+{
+	int n = 0, r = 0;
+
+	if (mpsse->mode) {
+		while (n < size) {
+			r = ftdi_read_data(&mpsse->ftdi, buf, size);
+			if (r < 0)
+				break;
+			n += r;
+		}
+
+		if (mpsse->flush_after_read) {
+			/*
+             * Make sure the buffers are cleared after a read or subsequent
+             * reads may fail.
+             *
+             * Is this needed anymore? It slows down repetitive read operations
+             * by ~8%.
+             */
+			ftdi_tciflush(&mpsse->ftdi);
+		}
+	}
+
+	return n;
+>>>>>>> ae4237a... Adding a cmake file
 }
 
 /* Sets the read and write timeout periods for bulk usb data transfers. */
 void set_timeouts(struct mpsse_context *mpsse, int timeout)
 {
-	if(mpsse->mode)
-        {
-                mpsse->ftdi.usb_read_timeout = timeout;
-                mpsse->ftdi.usb_write_timeout = timeout;
-        }
+	if (mpsse->mode) {
+		mpsse->ftdi.usb_read_timeout = timeout;
+		mpsse->ftdi.usb_write_timeout = timeout;
+	}
 
 	return;
 }
@@ -84,49 +107,45 @@ uint32_t div2freq(uint32_t system_clock, uint16_t div)
 }
 
 /* Builds a buffer of commands + data blocks */
-unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, const unsigned char *data, size_t size, int *buf_size)
+<<<<<<< HEAD
+unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd,
+				  const unsigned char *data, size_t size,
+				  int *buf_size)
 {
 	unsigned char *buf = NULL;
-	int i = 0, j = 0, k = 0, dsize = 0, num_blocks = 0, total_size = 0, xfer_size = 0;
+	int i = 0, j = 0, k = 0, dsize = 0, num_blocks = 0, total_size = 0,
+	    xfer_size = 0;
 	uint16_t rsize = 0;
 
 	*buf_size = 0;
 
 	/* Data block size is 1 in I2C, or when in bitmode */
-	if(mpsse->mode == I2C || (cmd & MPSSE_BITMODE))
-	{
+	if (mpsse->mode == I2C || (cmd & MPSSE_BITMODE)) {
 		xfer_size = 1;
-	}
-	else
-	{
+	} else {
 		xfer_size = mpsse->xsize;
 	}
 
 	num_blocks = (size / xfer_size);
-	if(size % xfer_size)
-	{
+	if (size % xfer_size) {
 		num_blocks++;
 	}
 
 	/* The total size of the data will be the data size + the write command */
-        total_size = size + (CMD_SIZE * num_blocks);
+	total_size = size + (CMD_SIZE * num_blocks);
 
 	/* In I2C we have to add 3 additional commands per data block */
-	if(mpsse->mode == I2C)
-	{
+	if (mpsse->mode == I2C) {
 		total_size += (CMD_SIZE * 3 * num_blocks);
 	}
 
-        buf = malloc(total_size);
-        if(buf)
-        {
-                memset(buf, 0, total_size);
+	buf = malloc(total_size);
+	if (buf) {
+		memset(buf, 0, total_size);
 
-		for(j=0; j<num_blocks; j++)
-		{
+		for (j = 0; j < num_blocks; j++) {
 			dsize = size - k;
-			if(dsize > xfer_size)
-			{
+			if (dsize > xfer_size) {
 				dsize = xfer_size;
 			}
 
@@ -134,18 +153,14 @@ unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, cons
 			rsize = dsize - 1;
 
 			/* For I2C we need to ensure that the clock pin is set low prior to clocking out data */
-			if(mpsse->mode == I2C)
-			{
+			if (mpsse->mode == I2C) {
 				buf[i++] = SET_BITS_LOW;
 				buf[i++] = mpsse->pstart & ~SK;
 
 				/* On receive, we need to ensure that the data out line is set as an input to avoid contention on the bus */
-				if(cmd == mpsse->rx)
-				{
+				if (cmd == mpsse->rx) {
 					buf[i++] = mpsse->tris & ~DO;
-				}
-				else
-				{
+				} else {
 					buf[i++] = mpsse->tris;
 				}
 			}
@@ -153,15 +168,13 @@ unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, cons
 			/* Copy in the command for this block */
 			buf[i++] = cmd;
 			buf[i++] = (rsize & 0xFF);
-			if(!(cmd & MPSSE_BITMODE))
-			{
+			if (!(cmd & MPSSE_BITMODE)) {
 				buf[i++] = ((rsize >> 8) & 0xFF);
 			}
 
 			/* On a write, copy the data to transmit after the command */
-			if(cmd == mpsse->tx || cmd == mpsse->txrx)
-			{
-				memcpy(buf+i, data+k, dsize);
+			if (cmd == mpsse->tx || cmd == mpsse->txrx) {
+				memcpy(buf + i, data + k, dsize);
 
 				/* i == offset into buf */
 				i += dsize;
@@ -170,11 +183,9 @@ unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, cons
 			}
 
 			/* In I2C mode we need to clock one ACK bit after each byte */
-			if(mpsse->mode == I2C)
-			{
+			if (mpsse->mode == I2C) {
 				/* If we are receiving data, then we need to clock out an ACK for each byte */
-				if(cmd == mpsse->rx)
-				{
+				if (cmd == mpsse->rx) {
 					buf[i++] = SET_BITS_LOW;
 					buf[i++] = mpsse->pstart & ~SK;
 					buf[i++] = mpsse->tris;
@@ -184,8 +195,7 @@ unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, cons
 					buf[i++] = mpsse->tack;
 				}
 				/* If we are sending data, then we need to clock in an ACK for each byte */
-				else if(cmd == mpsse->tx)
-				{
+				else if (cmd == mpsse->tx) {
 					/* Need to make data out an input to avoid contention on the bus when the slave sends an ACK */
 					buf[i++] = SET_BITS_LOW;
 					buf[i++] = mpsse->pstart & ~SK;
@@ -202,6 +212,117 @@ unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd, cons
 	}
 
 	return buf;
+=======
+unsigned char *build_block_buffer(struct mpsse_context *mpsse, uint8_t cmd,
+				  unsigned char *data, int size, int *buf_size)
+{
+	unsigned char *buf = NULL;
+	int i = 0, j = 0, k = 0, dsize = 0, num_blocks = 0, total_size = 0,
+	    xfer_size = 0;
+	uint16_t rsize = 0;
+
+	*buf_size = 0;
+
+	/* Data block size is 1 in I2C, or when in bitmode */
+	if (mpsse->mode == I2C || (cmd & MPSSE_BITMODE)) {
+		xfer_size = 1;
+	} else {
+		xfer_size = mpsse->xsize;
+	}
+
+	num_blocks = (size / xfer_size);
+	if (size % xfer_size) {
+		num_blocks++;
+	}
+
+	/* The total size of the data will be the data size + the write command */
+	total_size = size + (CMD_SIZE * num_blocks);
+
+	/* In I2C we have to add 3 additional commands per data block */
+	if (mpsse->mode == I2C) {
+		total_size += (CMD_SIZE * 3 * num_blocks);
+	}
+
+	buf = malloc(total_size);
+	if (buf) {
+		memset(buf, 0, total_size);
+
+		for (j = 0; j < num_blocks; j++) {
+			dsize = size - k;
+			if (dsize > xfer_size) {
+				dsize = xfer_size;
+			}
+
+			/* The reported size of this block is block size - 1 */
+			rsize = dsize - 1;
+
+			/* For I2C we need to ensure that the clock pin is set low prior to
+             * clocking out data */
+			if (mpsse->mode == I2C) {
+				buf[i++] = SET_BITS_LOW;
+				buf[i++] = mpsse->pstart & ~SK;
+
+				/* On receive, we need to ensure that the data out line is set
+                 * as an input to avoid contention on the bus */
+				if (cmd == mpsse->rx) {
+					buf[i++] = mpsse->tris & ~DO;
+				} else {
+					buf[i++] = mpsse->tris;
+				}
+			}
+
+			/* Copy in the command for this block */
+			buf[i++] = cmd;
+			buf[i++] = (rsize & 0xFF);
+			if (!(cmd & MPSSE_BITMODE)) {
+				buf[i++] = ((rsize >> 8) & 0xFF);
+			}
+
+			/* On a write, copy the data to transmit after the command */
+			if (cmd == mpsse->tx || cmd == mpsse->txrx) {
+				memcpy(buf + i, data + k, dsize);
+
+				/* i == offset into buf */
+				i += dsize;
+				/* k == offset into data */
+				k += dsize;
+			}
+
+			/* In I2C mode we need to clock one ACK bit after each byte */
+			if (mpsse->mode == I2C) {
+				/* If we are receiving data, then we need to clock out an ACK
+                 * for each byte */
+				if (cmd == mpsse->rx) {
+					buf[i++] = SET_BITS_LOW;
+					buf[i++] = mpsse->pstart & ~SK;
+					buf[i++] = mpsse->tris;
+
+					buf[i++] = mpsse->tx | MPSSE_BITMODE;
+					buf[i++] = 0;
+					buf[i++] = mpsse->tack;
+				}
+				/* If we are sending data, then we need to clock in an ACK for
+                 * each byte
+                 */
+				else if (cmd == mpsse->tx) {
+					/* Need to make data out an input to avoid contention on the
+                     * bus when the slave sends an ACK */
+					buf[i++] = SET_BITS_LOW;
+					buf[i++] = mpsse->pstart & ~SK;
+					buf[i++] = mpsse->tris & ~DO;
+
+					buf[i++] = mpsse->rx | MPSSE_BITMODE;
+					buf[i++] = 0;
+					buf[i++] = SEND_IMMEDIATE;
+				}
+			}
+		}
+
+		*buf_size = i;
+	}
+
+	return buf;
+>>>>>>> ae4237a... Adding a cmake file
 }
 
 /* Set the low bit pins high/low */
@@ -213,7 +334,7 @@ int set_bits_low(struct mpsse_context *mpsse, int port)
 	buf[1] = port;
 	buf[2] = mpsse->tris;
 
-	return raw_write(mpsse, (unsigned char *) &buf, sizeof(buf));
+	return raw_write(mpsse, (unsigned char *)&buf, sizeof(buf));
 }
 
 /* Set the high bit pins high/low */
@@ -225,84 +346,76 @@ int set_bits_high(struct mpsse_context *mpsse, int port)
 	buf[1] = port;
 	buf[2] = mpsse->trish;
 
-	return raw_write(mpsse, (unsigned char *) &buf, sizeof(buf));
+	return raw_write(mpsse, (unsigned char *)&buf, sizeof(buf));
 }
 
-int get_bits_low(struct mpsse_context *mpsse, uint8_t* value) {
+int get_bits_low(struct mpsse_context *mpsse, uint8_t *value)
+{
 	unsigned char buf[] = { GET_BITS_LOW };
 
 	int res = raw_write(mpsse, buf, sizeof(buf));
-	if (res != MPSSE_OK) return res;
+	if (res != MPSSE_OK)
+		return res;
 
-	if (raw_read(mpsse, value, 1) != 1) return MPSSE_FAIL;
+	if (raw_read(mpsse, value, 1) != 1)
+		return MPSSE_FAIL;
 	return MPSSE_OK;
 }
 
-int get_bits_high(struct mpsse_context *mpsse, uint8_t* value) {
+int get_bits_high(struct mpsse_context *mpsse, uint8_t *value)
+{
 	unsigned char buf[] = { GET_BITS_HIGH };
 
 	int res = raw_write(mpsse, buf, sizeof(buf));
-	if (res != MPSSE_OK) return res;
+	if (res != MPSSE_OK)
+		return res;
 
-	if (raw_read(mpsse, value, 1) != 1) return MPSSE_FAIL;
+	if (raw_read(mpsse, value, 1) != 1)
+		return MPSSE_FAIL;
 	return MPSSE_OK;
 }
 
 /* Set the GPIO pins high/low */
+<<<<<<< HEAD
 int gpio_write(struct mpsse_context *mpsse, int pin, int direction)
 {
 	int retval = MPSSE_FAIL;
 
-	if(mpsse->mode == BITBANG)
-	{
-		if(direction == HIGH)
-		{
+	if (mpsse->mode == BITBANG) {
+		if (direction == HIGH) {
 			mpsse->bitbang |= (1 << pin);
-		}
-		else
-		{
+		} else {
 			mpsse->bitbang &= ~(1 << pin);
 		}
 
-		if(set_bits_high(mpsse, mpsse->bitbang) == MPSSE_OK)
-		{
-                	retval = raw_write(mpsse, (unsigned char *) &mpsse->bitbang, 1);
+		if (set_bits_high(mpsse, mpsse->bitbang) == MPSSE_OK) {
+			retval = raw_write(mpsse,
+					   (unsigned char *)&mpsse->bitbang, 1);
 		}
-	}
-	else
-	{
+	} else {
 		/* The first four pins can't be changed unless we are in a stopped status */
-		if(pin < NUM_GPIOL_PINS && mpsse->status == STOPPED)
-		{
+		if (pin < NUM_GPIOL_PINS && mpsse->status == STOPPED) {
 			/* Convert pin number (0-3) to the corresponding pin bit */
 			pin = (GPIO0 << pin);
 
-	        	if(direction == HIGH)
-	        	{
-	        	        mpsse->pstart |= pin;
-	        	        mpsse->pidle |= pin;
-	        	        mpsse->pstop |= pin;
-	        	}
-	        	else
-	        	{
-	        	        mpsse->pstart &= ~pin;
-	        	        mpsse->pidle &= ~pin;
-	        	        mpsse->pstop &= ~pin;
-	        	}
+			if (direction == HIGH) {
+				mpsse->pstart |= pin;
+				mpsse->pidle |= pin;
+				mpsse->pstop |= pin;
+			} else {
+				mpsse->pstart &= ~pin;
+				mpsse->pidle &= ~pin;
+				mpsse->pstop &= ~pin;
+			}
 
 			retval = set_bits_low(mpsse, mpsse->pstart);
-		}
-		else if(pin >= NUM_GPIOL_PINS && pin < NUM_GPIO_PINS)
-		{
+		} else if (pin >= NUM_GPIOL_PINS && pin < NUM_GPIO_PINS) {
 			/* Convert pin number (4 - 11) to the corresponding pin bit */
 			pin -= NUM_GPIOL_PINS;
 
-			if(direction == HIGH)
-			{
+			if (direction == HIGH) {
 				mpsse->gpioh |= (1 << pin);
-			}
-			else
-			{
+			} else {
 				mpsse->gpioh &= ~(1 << pin);
 			}
 
@@ -311,6 +424,56 @@ int gpio_write(struct mpsse_context *mpsse, int pin, int direction)
 	}
 
 	return retval;
+=======
+int gpio_write(struct mpsse_context *mpsse, int pin, int direction)
+{
+	int retval = MPSSE_FAIL;
+
+	if (mpsse->mode == BITBANG) {
+		if (direction == HIGH) {
+			mpsse->bitbang |= (1 << pin);
+		} else {
+			mpsse->bitbang &= ~(1 << pin);
+		}
+
+		if (set_bits_high(mpsse, mpsse->bitbang) == MPSSE_OK) {
+			retval = raw_write(mpsse,
+					   (unsigned char *)&mpsse->bitbang, 1);
+		}
+	} else {
+		/* The first four pins can't be changed unless we are in a stopped
+         * status */
+		if (pin < NUM_GPIOL_PINS && mpsse->status == STOPPED) {
+			/* Convert pin number (0-3) to the corresponding pin bit */
+			pin = (GPIO0 << pin);
+
+			if (direction == HIGH) {
+				mpsse->pstart |= pin;
+				mpsse->pidle |= pin;
+				mpsse->pstop |= pin;
+			} else {
+				mpsse->pstart &= ~pin;
+				mpsse->pidle &= ~pin;
+				mpsse->pstop &= ~pin;
+			}
+
+			retval = set_bits_low(mpsse, mpsse->pstart);
+		} else if (pin >= NUM_GPIOL_PINS && pin < NUM_GPIO_PINS) {
+			/* Convert pin number (4 - 11) to the corresponding pin bit */
+			pin -= NUM_GPIOL_PINS;
+
+			if (direction == HIGH) {
+				mpsse->gpioh |= (1 << pin);
+			} else {
+				mpsse->gpioh &= ~(1 << pin);
+			}
+
+			retval = set_bits_high(mpsse, mpsse->gpioh);
+		}
+	}
+
+	return retval;
+>>>>>>> ae4237a... Adding a cmake file
 }
 
 /* Checks if a given MPSSE context is valid. */
@@ -318,8 +481,7 @@ int is_valid_context(struct mpsse_context *mpsse)
 {
 	int retval = 0;
 
-	if(mpsse != NULL && mpsse->open)
-	{
+	if (mpsse != NULL && mpsse->open) {
 		retval = 1;
 	}
 

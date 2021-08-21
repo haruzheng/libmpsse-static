@@ -45,3 +45,7 @@ py-compile
 pyswig_*.c
 config.h.in
 stamp-h1
+
+cmake-build-debug
+CMakeCache.txt
+CMakeFiles/

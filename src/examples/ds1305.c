@@ -1,7 +1,6 @@
-#include "config.h"
+#include <mpsse.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mpsse.h>
 #include <unistd.h>
 
 int main(void)
@@ -9,20 +8,21 @@ int main(void)
 	struct mpsse_context *ds1305 = NULL;
 	int sec = 0, min = 0, retval = EXIT_FAILURE;
 	char *control = NULL, *seconds = NULL, *minutes = NULL;
-	
-	if((ds1305 = MPSSE(SPI3, ONE_HUNDRED_KHZ, MSB)) != NULL && ds1305->open)
-	{
+
+	if ((ds1305 = MPSSE(SPI3, ONE_HUNDRED_KHZ, MSB)) != NULL &&
+	    ds1305->open) {
 		SetCSIdle(ds1305, 0);
 
-		printf("%s initialized at %dHz (SPI mode 3)\n", GetDescription(ds1305), GetClock(ds1305));
-		
+		printf("%s initialized at %dHz (SPI mode 3)\n",
+		       GetDescription(ds1305), GetClock(ds1305));
+
 		Start(ds1305);
 		Write(ds1305, "\x0F", 1);
 		control = Read(ds1305, 1);
 		Stop(ds1305);
-		
+
 		control[0] &= ~0x80;
-		
+
 		Start(ds1305);
 		Write(ds1305, "\x8F", 1);
 		Write(ds1305, control, 1);
@@ -30,8 +30,7 @@ int main(void)
 
 		free(control);
 
-		while(1)
-		{
+		while (1) {
 			sleep(1);
 
 			Start(ds1305);
@@ -52,10 +51,8 @@ int main(void)
 
 			free(minutes);
 			free(seconds);
-		}	
-	}
-	else
-	{
+		}
+	} else {
 		printf("Failed to initialize MPSSE: %s\n", ErrorString(ds1305));
 	}
 

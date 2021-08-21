@@ -1,7 +1,6 @@
-#include "config.h"
+#include <mpsse.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <mpsse.h>
 
 int main(void)
 {
@@ -10,23 +9,19 @@ int main(void)
 
 	io = MPSSE(BITBANG, 0, 0);
 
-	if(io && io->open)
-	{
-		for(i=0; i<10; i++)
-		{
+	if (io && io->open) {
+		for (i = 0; i < 10; i++) {
 			PinHigh(io, 0);
 			printf("Pin 0 is: %d\n", PinState(io, 0, -1));
 			sleep(1);
-			
+
 			PinLow(io, 0);
 			printf("Pin 0 is: %d\n", PinState(io, 0, -1));
 			sleep(1);
 		}
 
 		retval = EXIT_SUCCESS;
-	}
-	else
-	{
+	} else {
 		printf("Failed to open MPSSE: %s\n", ErrorString(io));
 	}
 
