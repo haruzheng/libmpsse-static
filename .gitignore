@@ -27,6 +27,7 @@ Makefile.in
 aclocal.m4
 ar-lib
 autoscan.log
+bin
 build
 build/*
 compile
