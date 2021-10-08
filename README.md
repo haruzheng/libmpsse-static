@@ -1,3 +1,10 @@
+# HOW TO INITIALIZATION
+
+```
+git clone git@github.com:haruzheng/libmpsse-static.git
+git submodule update --init
+```
+
 # ABOUT
 
 [![Build Status](https://travis-ci.org/l29ah/libmpsse.svg?branch=master)](https://travis-ci.org/l29ah/libmpsse)
@@ -80,7 +87,7 @@ Libmpsse supports all four SPI modes as well as I2C. However, due to the design 
 there are some limitations:
 
 - All protocols support master mode only.
-- SPI modes 1 and 3 are only partially supported; see the README.SPI for more information.
+- SPI modes 1 and 3 are only partially supported; see the [README.SPI](docs/README.SPI) for more information.
 - In I2C, the SCL and SDA pins are open drain, but the MPSSE implementation explicitly drives these lines high.
   Although this is usually fine, it means that some I2C features, such as clock stretching, are not supported.
 
