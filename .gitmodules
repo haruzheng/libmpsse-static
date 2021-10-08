@@ -4,3 +4,6 @@
 [submodule "libftdi"]
 	path = libftdi
 	url = git://developer.intra2net.com/libftdi
+[submodule "libconfuse"]
+	path = libconfuse
+	url = https://github.com/libconfuse/libconfuse.git
