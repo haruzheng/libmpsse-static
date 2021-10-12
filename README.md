@@ -2,7 +2,13 @@
 
 ```
 git clone git@github.com:haruzheng/libmpsse-static.git
-git submodule update --init
+git submodule init
+git submodule update
+```
+
+# HOW TO BUILD
+```
+./build.sh
 ```
 
 # ABOUT
