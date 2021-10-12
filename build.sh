@@ -2,6 +2,9 @@
 git submodule init
 git submodule update
 
+# Global Variable
+CHECK_LIB_STATUS_SUCCEED=""
+
 # Make output
 if [ ! -d build ]; then
 	mkdir build
@@ -27,9 +30,9 @@ make
 make install
 if [ $? -ne 0 ]; then
 	echo -e "\n\e[31mlibusb build failed.\e[0m\n"
-	exit
 else
 	echo -e "\n\e[32mlibusb build succeed.\e[0m\n"
+	CHECK_LIB_STATUS_SUCCEED+="libusb"
 fi
 echo "----------------------------------------"
 
@@ -43,9 +46,9 @@ make
 make install
 if [ $? -ne 0 ]; then
 	echo -e "\n\e[31mlibconfuse build failed.\e[0m\n"
-	exit
 else
 	echo -e "\n\e[32mlibconfuse build succeed.\e[0m\n"
+	CHECK_LIB_STATUS_SUCCEED+="libconfuse"
 fi
 echo "----------------------------------------"
 
@@ -56,9 +59,9 @@ make
 make install
 if [ $? -ne 0 ]; then
 	echo -e "\n\e[31mlibftdi build failed.\e[0m\n"
-	exit
 else
 	echo -e "\n\e[32mlibftdi build succeed.\e[0m\n"
+	CHECK_LIB_STATUS_SUCCEED+="libftdi"
 fi
 echo "----------------------------------------"
 
@@ -73,10 +76,30 @@ make install
 make
 if [ $? -ne 0 ]; then
 	echo -e "\n\e[31mlibmpsse build failed.\e[0m\n"
-	exit
 else
 	echo -e "\n\e[32mlibmpsse build succeed.\e[0m\n"
+	CHECK_LIB_STATUS_SUCCEED+="libmpsse"
 fi
 echo "----------------------------------------"
 
 echo -e "\n\e[32mAll Finish.\e[0m\n"
+if [[ "$CHECK_LIB_STATUS_SUCCEED" =~ "libusb" ]]; then
+	echo -e "\e[32mlibusb build succeed.\e[0m"
+else
+	echo -e "\e[31mlibusb build failed.\e[0m"
+fi
+if [[ "$CHECK_LIB_STATUS_SUCCEED" =~ "libconfuse" ]]; then
+	echo -e "\e[32mlibconfuse build succeed.\e[0m"
+else
+	echo -e "\e[31mlibconfuse build failed.\e[0m"
+fi
+if [[ "$CHECK_LIB_STATUS_SUCCEED" =~ "libftdi" ]]; then
+	echo -e "\e[32mlibftdi build succeed.\e[0m"
+else
+	echo -e "\e[31mlibftdi build failed.\e[0m"
+fi
+if [[ "$CHECK_LIB_STATUS_SUCCEED" =~ "libmpsse" ]]; then
+	echo -e "\e[32mlibmpsse build succeed.\e[0m"
+else
+	echo -e "\e[31mlibmpsse build failed.\e[0m"
+fi
