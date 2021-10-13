@@ -10,9 +10,10 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "config.h"
 #include "mpsse.h"
 #include "support.h"
+
+#define PACKAGE_VERSION "v1.0"
 
 /* List of known FT2232-based devices */
 struct vid_pid supported_devices[] = {
@@ -147,9 +148,7 @@ static struct mpsse_context *OpenIndexInternal(int vid, int pid, enum modes mode
 
 			if (usbBus != 0 && usbAddress != 0)
 			{
-#if HAVE_LIBFTDI1_5
 				res = ftdi_usb_open_bus_addr(&mpsse->ftdi, usbBus, usbAddress);
-#endif
 			}
 			else
 			{

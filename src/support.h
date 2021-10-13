@@ -16,9 +16,4 @@ int get_bits_low(struct mpsse_context *mpsse, uint8_t* value);
 int gpio_write(struct mpsse_context *mpsse, int pin, int direction);
 int is_valid_context(struct mpsse_context *mpsse);
 
-#if !HAVE_LIBFTDI1_5
-#define ftdi_tcioflush ftdi_usb_purge_buffers
-#define ftdi_tciflush ftdi_usb_purge_rx_buffer
-#endif
-
 #endif
