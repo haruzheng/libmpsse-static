@@ -22,9 +22,6 @@ PWD=$(pwd)
 
 # Build libusb
 rm -rf ./*
-cd $PWD/../libusb
-./bootstrap.sh
-cd -
 $PWD/../libusb/configure -prefix=$PWD/../bin --enable-udev=no
 make
 make install
@@ -35,7 +32,7 @@ else
 	CHECK_LIB_STATUS_SUCCEED+="libusb"
 fi
 echo "----------------------------------------"
-
+exit
 # Build libconfuse
 rm -rf ./*
 cd $PWD/../libconfuse
@@ -54,7 +51,7 @@ echo "----------------------------------------"
 
 # Build libftdi
 rm -rf ./*
-#set PKG_CONFIG_PATH $PWD/../../bin/lib/pkgconfig
+export PKG_CONFIG_PATH $PWD/../bin/lib/pkgconfig
 cmake -DCMAKE_INSTALL_PREFIX=$PWD/../bin $PWD/../libftdi/
 #cmake -DCMAKE_INSTALL_PREFIX="../bin/" .. -DLIBUSB_LIBRARIES=../../bin/lib -DLIBUSB_INCLUDE_DIR=../../bin/include/libusb-1.0/ -DCONFUSE_LIBRARY=../../bin/lib/ -DCONFUSE_INCLUDE_DIR=../../bin/include/
 
