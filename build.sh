@@ -54,7 +54,10 @@ echo "----------------------------------------"
 
 # Build libftdi
 rm -rf ./*
+#set PKG_CONFIG_PATH $PWD/../../bin/lib/pkgconfig
 cmake -DCMAKE_INSTALL_PREFIX=$PWD/../bin $PWD/../libftdi/
+#cmake -DCMAKE_INSTALL_PREFIX="../bin/" .. -DLIBUSB_LIBRARIES=../../bin/lib -DLIBUSB_INCLUDE_DIR=../../bin/include/libusb-1.0/ -DCONFUSE_LIBRARY=../../bin/lib/ -DCONFUSE_INCLUDE_DIR=../../bin/include/
+
 make
 make install
 if [ $? -ne 0 ]; then
@@ -68,17 +71,15 @@ echo "----------------------------------------"
 # Build libmpsse
 rm -rf ./*
 cd $PWD/../src
-./bootstrap.sh
-cd -
-$PWD/../src/configure --disable-python --enable-static --disable-shared --prefix=$PWD/../bin CFLAGS="-I$PWD/../bin/include -I$PWD/../bin/include/libftdi1 -I$PWD/../bin/include/libusb-1.0" LDFLAGS="-L$PWD/../bin/lib $PWD/../bin/lib/*.a"
-make SUBDIRS=""
-make install
-make
+gcc -c *.c -I$PWD/../bin/include/libftdi1/ -static
+ar -rcs libmpsse.a *.o
 if [ $? -ne 0 ]; then
 	echo -e "\n\e[31mlibmpsse build failed.\e[0m\n"
 else
 	echo -e "\n\e[32mlibmpsse build succeed.\e[0m\n"
 	CHECK_LIB_STATUS_SUCCEED+="libmpsse"
+	cp libmpsse.a $PWD/../bin/lib
+	cp mpsse.h $PWD/../bin/include
 fi
 echo "----------------------------------------"
 
