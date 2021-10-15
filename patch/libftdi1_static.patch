@@ -1,0 +1,68 @@
+--- libftdi/src/CMakeLists.txt	2021-10-15 16:30:33.838119008 +0800
++++ libftdi/src/CMakeLists_new.txt	2021-10-15 16:30:00.908506593 +0800
+@@ -21,34 +21,45 @@
+ set(c_sources     ${CMAKE_CURRENT_SOURCE_DIR}/ftdi.c ${CMAKE_CURRENT_SOURCE_DIR}/ftdi_stream.c CACHE INTERNAL "List of c sources" )
+ set(c_headers     ${CMAKE_CURRENT_SOURCE_DIR}/ftdi.h CACHE INTERNAL "List of c headers" )
+ 
+-add_library(ftdi1 SHARED ${c_sources})
+-
+-math(EXPR VERSION_FIXUP "${MAJOR_VERSION} + 1")    # Compatibility with previous releases
+-set_target_properties(ftdi1 PROPERTIES VERSION ${VERSION_FIXUP}.${MINOR_VERSION}.0 SOVERSION 2)
+-# Prevent clobbering each other during the build
+-set_target_properties ( ftdi1 PROPERTIES CLEAN_DIRECT_OUTPUT 1 )
+-
+-
+-# Dependencies
+-target_link_libraries(ftdi1 ${LIBUSB_LIBRARIES})
++if ( SHAREDLIBS OR STATICLIBS )
++else ()
++  set(SHAREDLIBS "ON")
++endif ()
+ 
+-install ( TARGETS ftdi1
+-          RUNTIME DESTINATION bin
+-          LIBRARY DESTINATION lib${LIB_SUFFIX}
+-          ARCHIVE DESTINATION lib${LIB_SUFFIX}
+-        )
++if ( SHAREDLIBS )
++  add_library(ftdi1 SHARED ${c_sources})
++  math(EXPR VERSION_FIXUP "${MAJOR_VERSION} + 1")    # Compatibility with previous eleases
++  set_target_properties(ftdi1 PROPERTIES VERSION ${VERSION_FIXUP}.${MINOR_VERSION}.0 SOVERSION 2)
++  # Prevent clobbering each other during the build
++  set_target_properties ( ftdi1 PROPERTIES CLEAN_DIRECT_OUTPUT 1 )
++  # Dependencies
++  target_link_libraries(ftdi1 ${LIBUSB_LIBRARIES})
++  install ( TARGETS ftdi1
++            RUNTIME DESTINATION bin
++            LIBRARY DESTINATION lib${LIB_SUFFIX}
++            ARCHIVE DESTINATION lib${LIB_SUFFIX}
++          )
++  set(FTDI1-STATIC "ftdi1-static")
++else ()
++  set(FTDI1-STATIC "ftdi1")
++endif ()
+ 
+ if ( STATICLIBS )
+-  add_library(ftdi1-static STATIC ${c_sources})
+-  target_link_libraries(ftdi1-static ${LIBUSB_LIBRARIES})
+-  set_target_properties(ftdi1-static PROPERTIES OUTPUT_NAME "ftdi1")
+-  set_target_properties(ftdi1-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
+-  install ( TARGETS ftdi1-static
++  add_library(${FTDI1-STATIC} STATIC ${c_sources})
++  target_link_libraries(${FTDI1-STATIC} ${LIBUSB_LIBRARIES} "-lpthread")
++  set_target_properties(${FTDI1-STATIC} PROPERTIES OUTPUT_NAME "ftdi1")
++  set_target_properties(${FTDI1-STATIC} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
++  install ( TARGETS ${FTDI1-STATIC}
+             ARCHIVE DESTINATION lib${LIB_SUFFIX}
+             COMPONENT staticlibs
+           )
+ endif ()
+ 
++message("Libs setting are
++  Shared library(SHAREDLIBS) = ${SHAREDLIBS}
++  Static library(STATICLIBS) = ${STATICLIBS}
++")
++
+ install ( FILES ${c_headers}
+           DESTINATION include/${PROJECT_NAME}
+           COMPONENT headers

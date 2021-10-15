@@ -25,7 +25,7 @@ rm -rf ./*
 cd $PWD/../libusb
 ./bootstrap.sh
 cd -
-$PWD/../libusb/configure -prefix=$PWD/../bin --enable-udev=no
+$PWD/../libusb/configure --enable-static --disable-shared -prefix=$PWD/../bin --enable-udev=no
 make
 make install
 if [ $? -ne 0 ]; then
@@ -41,7 +41,7 @@ rm -rf ./*
 cd $PWD/../libconfuse
 ./autogen.sh
 cd -
-$PWD/../libconfuse/configure -prefix=$PWD/../bin
+$PWD/../libconfuse/configure --enable-static --disable-shared -prefix=$PWD/../bin
 make
 make install
 if [ $? -ne 0 ]; then
@@ -54,7 +54,8 @@ echo "----------------------------------------"
 
 # Build libftdi
 rm -rf ./*
-cmake -DCMAKE_INSTALL_PREFIX=$PWD/../bin $PWD/../libftdi/
+patch -i $PWD/../patch/libftdi1_static.patch $PWD/../libftdi/src/CMakeLists.txt
+cmake -DCMAKE_INSTALL_PREFIX=$PWD/../bin $PWD/../libftdi/ -DSHAREDLIBS=OFF -DSTATICLIBS=ON
 make
 make install
 if [ $? -ne 0 ]; then
@@ -63,6 +64,7 @@ else
 	echo -e "\n\e[32mlibftdi build succeed.\e[0m\n"
 	CHECK_LIB_STATUS_SUCCEED+="libftdi"
 fi
+patch -R -i $PWD/../patch/libftdi1_static.patch $PWD/../libftdi/src/CMakeLists.txt
 echo "----------------------------------------"
 
 # Build libmpsse
