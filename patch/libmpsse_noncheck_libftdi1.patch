@@ -1,0 +1,13 @@
+--- src/configure.ac	2021-10-21 10:43:30.055217887 +0800
++++ src/configure.ac2	2021-10-21 10:42:19.891849684 +0800
+@@ -34,8 +34,8 @@
+                  [AC_CHECK_HEADERS([ftdi.h],[LIBFTDI1=0],
+                                    [AC_MSG_ERROR([missing libftdi header files])])])
+ 
+-AC_CHECK_LIB([ftdi1],[ftdi_init],[],
+-             [AC_CHECK_LIB([ftdi],[ftdi_init],[],[AC_MSG_ERROR([missing libftdi library])],[])],[])
++#AC_CHECK_LIB([ftdi1],[ftdi_init],[],
++#             [AC_CHECK_LIB([ftdi],[ftdi_init],[],[AC_MSG_ERROR([missing libftdi library])],[])],[])
+ 
+ PKG_CHECK_MODULES(FTDI_1_5, [libftdi1 >= 1.5], LIBFTDI1_5=1, LIBFTDI1_5=0)
+ AC_DEFINE_UNQUOTED([HAVE_LIBFTDI1_5], [$LIBFTDI1_5], [Use libftdi >=1.5.])

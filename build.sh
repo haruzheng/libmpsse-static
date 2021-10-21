@@ -69,12 +69,13 @@ echo "----------------------------------------"
 
 # Build libmpsse
 rm -rf ./*
+patch -i $PWD/../patch/libmpsse_noncheck_libftdi1.patch $PWD/../src/configure.ac
 cd $PWD/../src
 ./bootstrap.sh
 cd -
-$PWD/../src/configure --disable-python --enable-static --disable-shared --prefix=$PWD/../bin CFLAGS="-I$PWD/../bin/include -I$PWD/../bin/include/libftdi1 -I$PWD/../bin/include/libusb-1.0" LDFLAGS="-L$PWD/../bin/lib $PWD/../bin/lib/*.a"
+$PWD/../src/configure --disable-python --enable-static --disable-shared --prefix=$PWD/../bin CFLAGS="-I$PWD/../bin/include -I$PWD/../bin/include/libftdi1 -I$PWD/../bin/include/libusb-1.0" LDFLAGS="-L$PWD/../bin/lib $PWD/../bin/lib/libftdi1.a $PWD/../bin/lib/libconfuse.a $PWD/../bin/lib/libusb-1.0.a -lpthread -static"
 make SUBDIRS=""
-make install
+make install SUBDIRS=""
 make
 if [ $? -ne 0 ]; then
 	echo -e "\n\e[31mlibmpsse build failed.\e[0m\n"
@@ -82,6 +83,7 @@ else
 	echo -e "\n\e[32mlibmpsse build succeed.\e[0m\n"
 	CHECK_LIB_STATUS_SUCCEED+="libmpsse"
 fi
+patch -R -i $PWD/../patch/libmpsse_noncheck_libftdi1.patch $PWD/../src/configure.ac
 echo "----------------------------------------"
 
 echo -e "\n\e[32mAll Finish.\e[0m\n"
