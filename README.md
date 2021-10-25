@@ -2,8 +2,6 @@
 
 ```
 git clone git@github.com:haruzheng/libmpsse-static.git
-git submodule init
-git submodule update
 ```
 
 # HOW TO BUILD

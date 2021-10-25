@@ -1,6 +1,4 @@
 #!/bin/bash
-git submodule init
-git submodule update
 
 # Global Variable
 CHECK_LIB_STATUS_SUCCEED=""
